@@ -7,6 +7,7 @@ class Cars(Resource):
     def get(self):
         scrp = Scrapper()
         cars = scrp.get_cars()
+        print(cars)
         return cars
     
 app = Flask(__name__)

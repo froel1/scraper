@@ -6,6 +6,7 @@ import itertools as itr
 from car_data_model import CarDataModel, CarLocationDetailsDataModel
 import googlemaps
 import math
+from google.maps import routing_v2
 
 
 class UserInputModel:
@@ -23,6 +24,7 @@ class LocationCalculator:
         self.data = data
         self.gmaps = googlemaps.Client(key=self.ApiKey)
         self.settings = settings
+        routing_v2.RoutesClient()
 
     def create(self):
         res = list(itr.combinations(self.data, 3))
@@ -31,16 +33,15 @@ class LocationCalculator:
             if self.__filter(ids):
                 data.append(ids)
                 m1 = self.data[ids[0]]
-                print(m1.location.destination)
+                # print(m1.location.destination)
                 # print("car 1 from:" + m1.location.location)
                 m2 = self.data[ids[1]]
-                print(m2.location.destination)
+                # print(m2.location.destination)
                 # print("car 1 from:" + m2.location.location)
                 m3 = self.data[ids[2]]
-                print(m3.location.destination)
-                break
+                # print(m3.location.destination)
                 # print("car 1 from:" + m3.location.location)
-
+        return data
         
 
     def __filter(self, ids: tuple[str, str, str]) -> bool:
@@ -48,7 +49,7 @@ class LocationCalculator:
         cargo_b = self.data[ids[1]]
         cargo_c = self.data[ids[2]]
         # filter max allowed wight
-        if (cargo_a.car.weight + cargo_b.car.weight + cargo_c.car.weight >= self.settings.max_allowed_wight):
+        if cargo_a.car.weight + cargo_b.car.weight + cargo_c.car.weight >= self.settings.max_allowed_wight:
             return False
         
         pick_up1 = self.__calculate_distance(
@@ -63,11 +64,10 @@ class LocationCalculator:
             pick_up2 > self.settings.max_distance_pickup or
             pick_up3 > self.settings.max_distance_pickup):
             return False
-
-        if (pick_up1 == 0 or pick_up2 == 0 or pick_up3 == 0):
+        if pick_up1 == 0 or pick_up2 == 0 or pick_up3 == 0:
             return False
-        # print("from A -> B: " + str(pick_up1) + " from A -> C: " +
-        #       str(pick_up2) + " from B -> C: " + str(pick_up3))
+        # print("from A -> B: " + str(cargo_a.location.location.address) + " from A -> C: " +
+        #       str(cargo_b.location.location.address) + " from B -> C: " + str(cargo_c.location.location.address))
 
         delivery1 = self.__calculate_distance(
             cargo_a.location.destination, cargo_b.location.destination)
@@ -97,8 +97,8 @@ class LocationCalculator:
             cargo_a.location.location, cargo_c.location.location)
         d3 = self.__calculate_distance(
             cargo_b.location.location, cargo_c.location.location)
-        print("from A -> B: " + str(d1) + " from A -> C: " +
-              str(d2) + " from B -> C: " + str(d3))
+        # print("from A -> B: " + str(d1) + " from A -> C: " +
+        #       str(d2) + " from B -> C: " + str(d3))
 
     def __calculate_distance(self, first_car: CarLocationDetailsDataModel, second_car: CarLocationDetailsDataModel) -> int:
         res = hs.haversine((first_car.latitude, first_car.longitude), (
@@ -107,7 +107,13 @@ class LocationCalculator:
 
 
 scrp = Scrapper()
-sett = UserInputModel(10000, 100, 2000, 1)
-loc = LocationCalculator(scrp.get_cars(), sett)
+sett = UserInputModel(13500, 50, 200, 0.1)
+data = scrp.get_cars()
+loc = LocationCalculator(data, sett)
 # loc.calculate()
-loc.create()
+result = loc.create()
+for car in result:
+    print(data[car[0]].location.location.map_url)
+    print(data[car[1]].location.location.map_url)
+    print(data[car[2]].location.location.map_url)
+    print("end of group" + str(car))

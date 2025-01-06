@@ -16,7 +16,6 @@ class Scrapper:
 
         loc_to = CarLocationDetailsDataModel(self.__format_special(
             destination.text), destination['href'], self.__get_geo_location(destination['href']))
-
         return CarLocationDataModel(loc_from, loc_to)
 
     def __get_geo_location(self, url):
@@ -47,7 +46,7 @@ class Scrapper:
         return ' '.join(data.split())
 
     def __get_data(self):
-        html = open('/Users/dundutso/Repos/Test Projects/ttt.html', 'r').read()
+        html = open(r"C:\Users\cotne\Downloads\programaitself\programaitself\ZIDVA\index.html", 'r').read()
         data = BeautifulSoup(html, 'html.parser')
         return data
 
@@ -61,7 +60,6 @@ class Scrapper:
                 car.find('a', attrs={'data-cn-cv': True}).text)
             vehicle = self.__parse_car_type(car)
             id = car['data-listing-id']
-
             # result[id] = {
             #     'price': price,
             #     'location': locations,
